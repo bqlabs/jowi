@@ -1,0 +1,279 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"print",
+				"println"
+			],
+			[
+				"anal",
+				"analogWrite	Arduino analogWrite"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "#include <ESP8266WiFi.h>\n#include <ESP8266mDNS.h>\n#include <WiFiClient.h>\n//#include \"config.h\"\n\n/*\nconfig.h\n\n#define WIFI_SSID \"wifi_name\"\n#define WIFI_PASSWORD \"wifi_pass\"\n#define OVERMIND_IP \"master_ip\"\n#define OVERMIND_PORT master_port\n*/\n\n#define SPEED_PIN_0_1 D3\n#define SPEED_PIN_0_2 D4\n#define SPEED_PIN_1_1 D7\n#define SPEED_PIN_1_2 D8\n#define SPEED_PIN_2_1 D2\n#define SPEED_PIN_2_2 D1\n\n#define SPEED_0_MIN 100\n#define SPEED_1_MIN 25\n#define SPEED_2_MIN 40\n\nconst char* ssid = WIFI_SSID;\nconst char* password = WIFI_PASSWORD;\nString input;\nboolean stringComplete = false;\n\nWiFiServer server(80);\nMiniLoki loki(SPEED_PIN_0_1, SPEED_PIN_0_2,\n              SPEED_PIN_1_1, SPEED_PIN_1_2,\n              SPEED_PIN_2_1, SPEED_PIN_2_2,\n              SPEED_0_MIN, SPEED_1_MIN, SPEED_2_MIN);\n\nvoid setup(void)\n{ \n  Serial.begin(9600);\n  WiFi.begin(ssid, password);\n  while (WiFi.status() != WL_CONNECTED) delay(500);\n  String DNS_name = init_swarm(\"mini_loki\");\n\n  if (!MDNS.begin(DNS_name.c_str())) {\n    while (1) {\n      delay(1000);\n    }\n  }\n  server.begin();\n  MDNS.addService(\"http\", \"tcp\", 80);\n\n  //Pins configuration\n  pinMode(SPEED_PIN_0_1, OUTPUT);\n  pinMode(SPEED_PIN_0_2, OUTPUT);\n  pinMode(SPEED_PIN_1_1, OUTPUT);\n  pinMode(SPEED_PIN_1_2, OUTPUT);\n  pinMode(SPEED_PIN_2_1, OUTPUT);\n  pinMode(SPEED_PIN_2_2, OUTPUT);\n  pinMode(D5, OUTPUT);\n  pinMode(A0, INPUT);\n  loki.parse_string(\"0,0,0,0,\");\n}\n\nvoid loop(void)\n{\n  WiFiClient client = server.available();\n  //if (!client) {}\n  while (client.connected()) {\n    while (client.available()) {\n      input = client.readStringUntil('\\n');\n      stringComplete = true;\n    }\n    if (stringComplete) {\n      client.write(analogRead(A0));\n      loki.parse_string(input);\n      stringComplete = false;\n    }\n  }\n}\n\nString init_swarm(String robot_name){\n  String name;\n  WiFiClient client;\n  while (!client.connect(OVERMIND_IP, OVERMIND_PORT)) delay(100);\n  IPAddress   localAddr = WiFi.localIP();\n  byte oct1 = localAddr[0];\n  byte oct2 = localAddr[1];\n  byte oct3 = localAddr[2];\n  byte oct4 = localAddr[3];\n  char local_IP[16];  \n  sprintf(local_IP, \"%d.%d.%d.%d\", oct1, oct2, oct3, oct4);\n  String msg = \"{\";\n  msg += \"\\\"ip\\\": \";msg += \"\\\"\";msg += (String)local_IP;msg += \"\\\"\";msg += \",\";\n  msg += \"\\\"type\\\": \";msg += \"\\\"\";msg += robot_name;msg += \"\\\"\";msg += \",\";\n  msg += \"\\\"chip_id\\\": \";msg += (String)ESP.getChipId();msg += \"}\";\n  client.print(msg);\n  while (!client.available()) delay(10);\n  while(client.available()) name = client.readStringUntil('\\n');\n  client.stop();\n  return name;\n}",
+			"file": "src/jowi.ino",
+			"file_size": 2580,
+			"file_write_time": 130952610816130860,
+			"settings":
+			{
+				"buffer_size": 2551,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "PlatformIO",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"PlatformIO",
+					""
+				],
+				[
+					"PlatformIO",
+					"Clean"
+				],
+				[
+					"PlatformIO",
+					"Upload"
+				]
+			],
+			[
+				"PlatformIO",
+				"Upload"
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "Packa",
+		"selected_items":
+		[
+			[
+				"Packa",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 146.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/david/github/jowi/code/platformio/jowi",
+		"/home/david/github/jowi/code/platformio/jowi/lib",
+		"/home/david/github/jowi/code/platformio/jowi/src"
+	],
+	"file_history":
+	[
+		"/home/david/github/jowi/code/platformio/jowi/src/config.h",
+		"/home/david/github/jowi/code/platformio/jowi/src/server.ino",
+		"/home/david/github/jowi/code/platformio/jowi/src/miniloki/miniloki.cpp",
+		"/home/david/github/miniloki/code/platformio/miniloki_omniboard/src/config.h",
+		"/home/david/github/miniloki/code/platformio/miniloki_omniboard/src/server.ino",
+		"/home/david/github/miniloki/code/platformio/miniloki_omniboard/src/miniloki/config.h",
+		"/home/david/loki/mini_loki/platformio/src/miniloki/miniloki.cpp",
+		"/home/david/loki/mini_loki/platformio/src/server.ino",
+		"/home/david/loki/mini_loki/platformio/src/GY_85.h",
+		"/home/david/loki/mini_loki/platformio/src/GY_85.cpp",
+		"/home/david/loki/mini_loki/platformio/src/BNO055.h",
+		"/home/david/loki/mini_loki/platformio/lib/Adafruit_10DOF/Adafruit_10DOF.cpp",
+		"/home/david/loki/mini_loki/platformio/lib/Adafruit_10DOF/Adafruit_10DOF.h",
+		"/home/david/loki/mini_loki/platformio/src/config.h",
+		"/home/david/loki/mini_loki/platformio/src/BNO055.cpp",
+		"/home/david/loki/mini_loki/platformio/src/miniloki/BNO055.h",
+		"/home/david/loki/mini_loki/platformio/src/SoftI2CMaster.cpp",
+		"/home/david/loki/mini_loki/platformio/src/miniloki/miniloki.h",
+		"/home/david/loki/mini_loki/platformio/src/miniloki/wifi_node.h",
+		"/home/david/loki/mini_loki/platformio/src/miniloki/wifi_node.cpp",
+		"/home/david/.config/sublime-text-3/Packages/Default/Default (Linux).sublime-keymap",
+		"/home/david/.config/sublime-text-3/Packages/User/Default (Linux).sublime-keymap"
+	],
+	"find":
+	{
+		"height": 26.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			".begin(",
+			".begin",
+			"l.intY;\n    accel.z = (float)accel.intZ;\n}",
+			"Serial",
+			"msg",
+			"ardu",
+			"moni",
+			"seria"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/jowi.ino",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2551,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								173,
+								173
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/User/Stino/Arduino.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 34.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 467.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "PlatformIO",
+	"project": "platformio.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 323.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
